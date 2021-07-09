@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.system.qanda.mapper.QandaMapper">
+    
+    <resultMap type="Qanda" id="QandaResult">
+        <result property="id"    column="id"    />
+        <result property="question"    column="question"    />
+        <result property="answer"    column="answer"    />
+    </resultMap>
+
+    <sql id="selectQandaVo">
+        select id, question, answer from qanda
+    </sql>
+
+    <select id="selectQandaList" parameterType="Qanda" resultMap="QandaResult">
+        <include refid="selectQandaVo"/>
+        <where>  
+            <if test="question != null  and question != ''"> and question = #{question}</if>
+            <if test="answer != null  and answer != ''"> and answer = #{answer}</if>
+        </where>
+    </select>
+    
+    <select id="selectQandaById" parameterType="Long" resultMap="QandaResult">
+        <include refid="selectQandaVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertQanda" parameterType="Qanda" useGeneratedKeys="true" keyProperty="id">
+        insert into qanda
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="question != null">question,</if>
+            <if test="answer != null">answer,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="question != null">#{question},</if>
+            <if test="answer != null">#{answer},</if>
+         </trim>
+    </insert>
+
+    <update id="updateQanda" parameterType="Qanda">
+        update qanda
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="question != null">question = #{question},</if>
+            <if test="answer != null">answer = #{answer},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteQandaById" parameterType="Long">
+        delete from qanda where id = #{id}
+    </delete>
+
+    <delete id="deleteQandaByIds" parameterType="String">
+        delete from qanda where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
