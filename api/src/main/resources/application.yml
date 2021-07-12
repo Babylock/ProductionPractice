@@ -1,0 +1,7 @@
+server:
+  port: 8080
+wx:
+  token: 6pS6xxy4xGRTfg8sleHgM
+  aeskey: 2BTeI5EePtphMC5NhjWvX2er3n5ntWYX2jHlz7jIBS1
+  corpid: wwfb1b3cd154964413
+  corpsecret: gx6zif8z-d299G-thkZogLIg9uVOPsseA1AYG1yKEAQ
