@@ -187,7 +187,7 @@ class FAQrobot(object):
                 for question in questions
             )
         maxSim = max(self.zhishiku, key=lambda x: x.sim)
-        logger.info('maxSim=' + format(maxSim.sim, '.0%'))
+        #logger.info('maxSim=' + format(maxSim.sim, '.0%'))
 
         if maxSim.sim < simCondision:
             return '抱歉，我没有理解您的意思。'
