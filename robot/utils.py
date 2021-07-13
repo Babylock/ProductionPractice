@@ -96,13 +96,13 @@ def similarity(a, b, method='simple', pos_weight=None, embedding=None):
         for word, pos in a:
             if word not in embedding.index2word:
                 continue
-
+            # 词性权重
             cur_weight = pos_weight.get(pos, 1)
-
-            max_word_sim = max(embedding.similarity(bword, word)
-                               for bword in b)
+            # 最大的词向量相似度
+            max_word_sim = max(embedding.similarity(bword, word)for bword in b)
+            # 词性权重*最大的词向量相似度
             sim_weight += cur_weight * max_word_sim
-
+            # 词性权重之和
             total_weight += cur_weight
-
+        # 返回 词性权重*最大的词向量相似度/词性权重之和
         return sim_weight / total_weight if total_weight > 0 else 0

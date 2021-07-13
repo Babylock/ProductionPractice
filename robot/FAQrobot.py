@@ -7,7 +7,7 @@ import xlwt
 import jieba
 import jieba.posseg as pseg
 import warnings
-warnings.filterwarnings('ignore')  # 警告扰人，手动封存
+warnings.filterwarnings('ignore')
 
 from utils import (
     get_logger,
@@ -17,7 +17,8 @@ from utils import (
 
 jieba.dt.tmp_dir = "./"
 jieba.default_logger.setLevel(logging.ERROR)
-logger = get_logger('faqrobot', logfile="faqrobot.log")
+#logger = get_logger('faqrobot', logfile="faqrobot.log")
+
 '''
 import pymysql
 #打开数据库连接
@@ -36,7 +37,7 @@ cursor=conn.cursor()
 count = cursor.execute('select * from question')
 print ('即将载入 %s 条数据' % count  )
 #重置游标位置
-cursor.scroll(1,mode='absolute')
+cursor.scroll(0,mode='absolute')
 #搜取所有结果
 results = cursor.fetchall()
 #测试代码，print results
@@ -45,13 +46,13 @@ fields = cursor.description
 #将字段写入到EXCEL新表的第一行
 wbk = xlwt.Workbook()
 sheet = wbk.add_sheet('test1',cell_overwrite_ok=True)
-for ifs in range(0,len(fields)):
+for ifs in range(0,len(fields)): #列
     sheet.write(0,ifs,fields[ifs][0])
 ics=1
 jcs=0
-for ics in range(1,len(results)+1):
+for ics in range(1,len(results)+1): #行
     for jcs in range(0,len(fields)):
-        sheet.write(ics,jcs,results[ics-1][jcs])
+        sheet.write(ics-1,jcs,results[ics-1][jcs])
 
 wbk.save('问答库.xlsx')
 
@@ -122,14 +123,14 @@ class FAQrobot(object):
                 if not t or t.startswith('#'):
                     abovetxt = 0
                 elif abovetxt != 2:
-                    if t.startswith('【问题】'): # 输入第一个问题
+                    if t.startswith('问题：'): # 输入第一个问题
                         self.zhishiku.append(zhishiku(t[4:]))
                         abovetxt = 2
                     else:       # 输入答案文本（非第一行的）
                         self.zhishiku[-1].a += '\n' + t
                         abovetxt = 1
                 else:
-                    if t.startswith('【问题】'): # 输入问题（非第一行的）
+                    if t.startswith('问题：'): # 输入问题（非第一行的）
                         self.zhishiku[-1].q.append(t[4:])
                         abovetxt = 2
                     else:       # 输入答案文本
@@ -163,6 +164,10 @@ class FAQrobot(object):
         """
         找出知识库里的和输入句子相似度最高的句子
         simType=simple, simple_POS, vec
+        simple：简单的对比相同词汇数量，得到句子相似度
+        simple_POS：简单的对比相同词汇数量,并对词性乘以不同的权重，得到句子相似度
+        vec：用词向量计算相似度,并对词性乘以不同的权重，得到句子相似度
+        all：调试模式，把以上几种模式的结果都显示出来，方便对比和调试
         """
         self.lastTxt.append(intxt)
         if simType not in ('simple', 'simple_pos', 'vec'):
