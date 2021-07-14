@@ -234,5 +234,5 @@ if __name__ == '__main__':
     robot = FAQrobot('问答库.txt', usedVec=False)
     print('你好，我是智能机器人^-^')
     while True:
-        # simType=simple, simple_pos, vec, all
+
         print('回复：' + robot.answer(input('输入：'), 'simple_pos') + '\n')
