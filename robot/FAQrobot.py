@@ -198,19 +198,20 @@ class FAQrobot(object):
                 similarity(in_vec, question, method=simType, embedding=embedding)
                 for question in questions
             )
-        maxSim = max(self.zhishiku, key=lambda x: x.sim)
+        maxSim = max(self.zhishiku, key=lambda x: x.sim) #最大相似度
 
         logger.info('maxSim=' + format(maxSim.sim, '.0%'))
 
         if maxSim.sim < simCondision:
-
+            print(maxSim.sim)
            # print('您是否想问: %s' % t.q)
             return '抱歉，我没有理解您的意思。'
 
-        if 0.1 < maxSim.sim < 0.4 :
-            print('您是否想问: %s' % maxSim.q)
-            #return'您是否想问: %s' % t.q
-
+        if 0.1 < maxSim.sim < 0.6 :
+            print(maxSim.sim)
+            #print('您是否想问: %s' % maxSim.q) #有反问有回答
+            return'您是否想问: %s' %  maxSim.q  #只提出反问
+        print(maxSim.sim)
         return maxSim.a
 
     def answer(self, intxt, simType='simple'):
