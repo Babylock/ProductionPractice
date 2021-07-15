@@ -207,10 +207,10 @@ class FAQrobot(object):
            # print('您是否想问: %s' % t.q)
             return '抱歉，我没有理解您的意思。'
 
-        if 0.1 < maxSim.sim < 0.6 :
+        if 0.1 < maxSim.sim < 0.8 :
             print(maxSim.sim)
-            #print('您是否想问: %s' % maxSim.q) #有反问有回答
-            return'您是否想问: %s' %  maxSim.q  #只提出反问
+            print('您是否想问: %s' % maxSim.q) #有反问有回答
+            #return'您是否想问: %s' %  maxSim.q  #只提出反问
         print(maxSim.sim)
         return maxSim.a
 
