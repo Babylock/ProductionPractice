@@ -9,6 +9,9 @@ import jieba.posseg as pseg
 import warnings
 warnings.filterwarnings('ignore')
 
+
+
+
 from utils import (
     get_logger,
     similarity,
@@ -146,6 +149,7 @@ class FAQrobot(object):
         for t in self.zhishiku: #jiebba分词
             for question in t.q:
                 t.q_word.append(set(jieba.cut(question)))
+                print("【加载后】：" + '/ '.join(jieba.cut(question)))
                 #print(t.q_word)
 
     def load_embedding(self):
@@ -177,9 +181,7 @@ class FAQrobot(object):
         vec：用词向量计算相似度,并对词性乘以不同的权重，得到句子相似度
         all：调试模式，把以上几种模式的结果都显示出来，方便对比和调试
         """
-        #result = jieba.tokenize(intxt, mode='search')
-        #for tk in result:
-         #   print("word %s\t\t start: %d \t\t end:%d" % (tk[0], tk[1], tk[2]))
+
 
         self.lastTxt.append(intxt) #intxt是文本输入
         if simType not in ('simple', 'simple_pos', 'vec'):
@@ -217,7 +219,7 @@ class FAQrobot(object):
     def answer(self, intxt, simType='simple'):
         """simType=simple, simple_POS, vec, all"""
         if not intxt:
-            return ''
+            return '抱歉，我没有理解您的意思。'
 
         if simType == 'all':  # 用于测试不同类型方法的准确度，返回空文本
             for method in ('simple', 'simple_pos', 'vec'):
