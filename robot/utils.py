@@ -1,5 +1,14 @@
 import logging
 from os.path import join, dirname
+import jieba
+
+# 载入词典
+jieba.load_userdict("userdict.txt")
+
+#jieba.add_word('xxx') #增加自定义词语
+#jieba.add_word('xxx', freq=42, tag='nz') #设置词频和词性
+#jieba.del_word('xxx') #删除自定义词语
+
 
 
 POS_WEIGHT = {
