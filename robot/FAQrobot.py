@@ -8,7 +8,7 @@ import jieba
 import jieba.posseg as pseg
 import warnings
 warnings.filterwarnings('ignore')
-
+import sys
 
 
 
@@ -35,7 +35,7 @@ print (type(conn))
 '''
 import MySQLdb
 
-conn=MySQLdb.connect(host='localhost',user='root',passwd='123123',db='ruoyi',port=3306,charset='utf8')
+conn=MySQLdb.connect(host='localhost',user='root',passwd='123123',db='dyc',port=3306,charset='utf8')
 cursor=conn.cursor()
 count = cursor.execute('select * from question')
 print ('即将载入 %s 条数据' % count)
@@ -49,12 +49,12 @@ fields = cursor.description
 #将字段写入到EXCEL新表的第一行
 wbk = xlwt.Workbook()
 sheet = wbk.add_sheet('test1',cell_overwrite_ok=True)
-for ifs in range(0,len(fields)): #列
+for ifs in range(1,len(fields)): #列
     sheet.write(0,ifs,fields[ifs][0])
 ics=1
-jcs=0
+jcs=1
 for ics in range(1,len(results)+1): #行
-    for jcs in range(0,len(fields)):
+    for jcs in range(1,len(fields)):
         sheet.write(ics-1,jcs,results[ics-1][jcs])
 
 wbk.save('问答库.xlsx')
@@ -149,7 +149,7 @@ class FAQrobot(object):
         for t in self.zhishiku: #jiebba分词
             for question in t.q:
                 t.q_word.append(set(jieba.cut(question)))
-                print("【加载后】：" + '/ '.join(jieba.cut(question)))
+                #print("【加载后】：" + '/ '.join(jieba.cut(question)))
                 #print(t.q_word)
 
     def load_embedding(self):
@@ -238,4 +238,6 @@ if __name__ == '__main__':
     print('你好，我是智能机器人^-^')
     while True:
 
-        print('回复：' + robot.answer(input('输入：'), 'simple_pos') + '\n')
+        print('回复：' + robot.answer(sys.argv[1], 'simple_pos') + '\n')
+        break
+    #input('输入：')

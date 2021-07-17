@@ -13,14 +13,14 @@ sql="select * from userdict"
 try:
     cursor.execute(sql)
     results=cursor.fetchall()
-    print(results)
+    #print(results)
     for row in results:
 
         word.append(row[0])
 
 except:
     print("出错了！")
-db.close()
+#db.close()
 # 载入词典
 jieba.load_userdict(word)
 
