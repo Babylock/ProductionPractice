@@ -7,9 +7,9 @@ import pymysql
 
 word=[]
 
-db=pymysql.Connection(host='localhost',user='root',passwd='123123',db='ruoyi',port=3306,charset='utf8')
+db=pymysql.Connection(host='localhost',user='root',passwd='123123',db='dyc',port=3306,charset='utf8')
 cursor=db.cursor()
-sql="select * from userdict"
+sql="select word from userdict"
 try:
     cursor.execute(sql)
     results=cursor.fetchall()
@@ -19,18 +19,14 @@ try:
         word.append(row[0])
 
 except:
-    print("出错了！")
-#db.close()
+    print("词典加载出错")
+db.close()
 # 载入词典
 jieba.load_userdict(word)
 
 #jieba.add_word('xxx') #增加自定义词语
 #jieba.add_word('xxx', freq=42, tag='nz') #设置词频和词性
 #jieba.del_word('xxx') #删除自定义词语
-
-#conn = sqlite3.connect('data/douban_comment_data.db')
-#comment_data = pd.read_sql_query('select * from comment;',conn)
-#print(comment_data)
 
 
 POS_WEIGHT = {

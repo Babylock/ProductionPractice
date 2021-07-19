@@ -13,14 +13,14 @@ import sys
 
 
 from utils import (
-    get_logger,
+    #get_logger,
     similarity,
 )
 
 
 jieba.dt.tmp_dir = "./"
 jieba.default_logger.setLevel(logging.ERROR)
-logger = get_logger('faqrobot', logfile="faqrobot.log")
+#logger = get_logger('faqrobot', logfile="faqrobot.log")
 
 '''
 import pymysql
@@ -38,7 +38,7 @@ import MySQLdb
 conn=MySQLdb.connect(host='localhost',user='root',passwd='123123',db='dyc',port=3306,charset='utf8')
 cursor=conn.cursor()
 count = cursor.execute('select * from question')
-print ('即将载入 %s 条数据' % count)
+#print ('即将载入 %s 条数据' % count)
 #重置游标位置
 cursor.scroll(0,mode='absolute')
 #搜取所有结果
@@ -50,12 +50,13 @@ fields = cursor.description
 wbk = xlwt.Workbook()
 sheet = wbk.add_sheet('test1',cell_overwrite_ok=True)
 for ifs in range(1,len(fields)): #列
-    sheet.write(0,ifs,fields[ifs][0])
+    sheet.write(0,ifs, fields[ifs][0])
 ics=1
 jcs=1
 for ics in range(1,len(results)+1): #行
     for jcs in range(1,len(fields)):
         sheet.write(ics-1,jcs,results[ics-1][jcs])
+        sheet.write(ics - 1, 1, '问题：' + results[ics - 1][1])
 
 wbk.save('问答库.xlsx')
 
@@ -119,7 +120,7 @@ class FAQrobot(object):
         self.reload()
 
     def load_qa(self):
-        print('问答知识库开始载入')
+        #print('问答知识库开始载入')
         self.zhishiku = []
         with open(self.zhishitxt) as f:
             txt = f.readlines()
@@ -170,7 +171,7 @@ class FAQrobot(object):
         self.load_qa()
         self.load_embedding()
 
-        print('问答知识库载入完毕')
+        #print('问答知识库载入完毕')
 
     def maxSimTxt(self, intxt, simCondision=0.1, simType='simple'):
         """
@@ -202,18 +203,20 @@ class FAQrobot(object):
             )
         maxSim = max(self.zhishiku, key=lambda x: x.sim) #最大相似度
 
-        logger.info('maxSim=' + format(maxSim.sim, '.0%'))
+        #logger.info('maxSim=' + format(maxSim.sim, '.0%'))
 
         if maxSim.sim < simCondision:
-            print(maxSim.sim)
+            #print(maxSim.sim)
            # print('您是否想问: %s' % t.q)
             return '抱歉，我没有理解您的意思。'
 
         if 0.1 < maxSim.sim < 0.8 :
-            print(maxSim.sim)
-            print('您是否想问: %s' % maxSim.q) #有反问有回答
-            #return'您是否想问: %s' %  maxSim.q  #只提出反问
-        print(maxSim.sim)
+            #print(maxSim.sim)
+            #print('您是否想问: %s' % maxSim.q) #有反问有回答
+           # return'您是否想问: %s' %  maxSim.q  #只提出反问
+            return'您是否想问: '+','.join(str(i) for i in maxSim.q )
+
+        #print(maxSim.sim)
         return maxSim.a
 
     def answer(self, intxt, simType='simple'):
@@ -235,9 +238,9 @@ class FAQrobot(object):
 
 if __name__ == '__main__':
     robot = FAQrobot('问答库.txt', usedVec=False)
-    print('你好，我是智能机器人^-^')
+    #print('你好，我是智能机器人^-^')
     while True:
 
-        print('回复：' + robot.answer(sys.argv[1], 'simple_pos') + '\n')
+        print(robot.answer(sys.argv[1], 'simple_pos') + '\n')
         break
-    #input('输入：')
+    
