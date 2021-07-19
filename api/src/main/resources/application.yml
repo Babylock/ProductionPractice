@@ -5,3 +5,5 @@ wx:
   aeskey: 2BTeI5EePtphMC5NhjWvX2er3n5ntWYX2jHlz7jIBS1
   corpid: wwfb1b3cd154964413
   corpsecret: gx6zif8z-d299G-thkZogLIg9uVOPsseA1AYG1yKEAQ
+python:
+  path: /home/code/ProductionPractice-main/robot/FAQrobot.py

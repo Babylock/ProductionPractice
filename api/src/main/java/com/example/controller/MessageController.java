@@ -15,7 +15,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 
 
@@ -78,16 +80,66 @@ public class MessageController {
             nodelist1 = root.getElementsByTagName("FromUserName");
             String toUserName = nodelist1.item(0).getTextContent();
             System.out.println("UserName: " + toUserName);
-
+            String buffer = null;
+            StringBuilder answer = new StringBuilder();
             // 获取答案
+            BufferedReader bufferReader = null;
+            try {
+                //创建子进程，调用命令行启动Python程序并传参传递参数
+                Process process = Runtime.getRuntime().exec(
+                        String.format("python3 %s %s", environment.getProperty("python.path"), content)
+                );
+                //读取Python程序的输出
+                bufferReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
+                while ((buffer = bufferReader.readLine()) != null) {
+                    answer.append(buffer);
+                }
+                //当前进程等待子进程执行完毕
+                process.waitFor();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                try {
+                    bufferReader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             // 发送答案
-            SendWX.send(toUserName, content, environment);
+            //SendWX.send(toUserName, content, environment);
+            SendWX.send(toUserName, answer.toString(), environment);
 
         } catch (AesException e) {
             e.printStackTrace();
         }
         return "";
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        BufferedReader bufferReader = null;
+        try {
+            //创建子进程，调用命令行启动Python程序并传参传递参数
+            Process process = Runtime.getRuntime().exec("python C:\\Users\\bblk\\Desktop\\main.py");
+            System.out.println("xss");
+            //读取Python程序的输出
+            bufferReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            process.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                bufferReader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return "success";
     }
 
     private Environment environment;

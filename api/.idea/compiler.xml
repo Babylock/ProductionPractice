@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="bblk" />
         <module name="接口" />
+        <module name="api" />
       </profile>
     </annotationProcessing>
   </component>
