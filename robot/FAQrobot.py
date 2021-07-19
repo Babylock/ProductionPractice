@@ -7,7 +7,10 @@ import xlwt
 import jieba
 import jieba.posseg as pseg
 import warnings
-warnings.filterwarnings('ignore')  # 警告扰人，手动封存
+warnings.filterwarnings('ignore')
+import sys
+
+
 
 from utils import (
     get_logger,
@@ -18,6 +21,7 @@ from utils import (
 jieba.dt.tmp_dir = "./"
 jieba.default_logger.setLevel(logging.ERROR)
 logger = get_logger('faqrobot', logfile="faqrobot.log")
+
 '''
 import pymysql
 #打开数据库连接
@@ -31,12 +35,12 @@ print (type(conn))
 '''
 import MySQLdb
 
-conn=MySQLdb.connect(host='localhost',user='root',passwd='123123',db='ruoyi',port=3306,charset='utf8')
+conn=MySQLdb.connect(host='localhost',user='root',passwd='123123',db='dyc',port=3306,charset='utf8')
 cursor=conn.cursor()
 count = cursor.execute('select * from question')
-print ('即将载入 %s 条数据' % count  )
+print ('即将载入 %s 条数据' % count)
 #重置游标位置
-cursor.scroll(1,mode='absolute')
+cursor.scroll(0,mode='absolute')
 #搜取所有结果
 results = cursor.fetchall()
 #测试代码，print results
@@ -45,13 +49,13 @@ fields = cursor.description
 #将字段写入到EXCEL新表的第一行
 wbk = xlwt.Workbook()
 sheet = wbk.add_sheet('test1',cell_overwrite_ok=True)
-for ifs in range(0,len(fields)):
+for ifs in range(1,len(fields)): #列
     sheet.write(0,ifs,fields[ifs][0])
 ics=1
-jcs=0
-for ics in range(1,len(results)+1):
-    for jcs in range(0,len(fields)):
-        sheet.write(ics,jcs,results[ics-1][jcs])
+jcs=1
+for ics in range(1,len(results)+1): #行
+    for jcs in range(1,len(fields)):
+        sheet.write(ics-1,jcs,results[ics-1][jcs])
 
 wbk.save('问答库.xlsx')
 
@@ -80,9 +84,9 @@ colnames = table.row_values(0)  # 某一行数据
 #print(nrows)
 #print(ncols)
 #print(colnames)
-for ronum in range(1, nrows):
+for ronum in range(0, nrows): #从第一行开始转换
     row = table.row_values(ronum)
-    values = strs(row) # 条用函数，将行数据拼接成字符串
+    values = strs(row) # 将行数据拼接成字符串
 
     sqlfile.writelines(values + "\r") #将字符串写入新文件
 sqlfile.close() # 关闭写入的文件
@@ -107,8 +111,11 @@ class FAQrobot(object):
     def __init__(self, zhishitxt='问答库.txt', lastTxtLen=10, usedVec=False):
         # usedVec 如果是True 在初始化时会解析词向量，加快计算句子相似度的速度
         self.lastTxt = deque([], lastTxtLen)
+       # print(self.lastTxt)
         self.zhishitxt = zhishitxt
+      #  print(self.zhishitxt)
         self.usedVec = usedVec
+      #  print(self.usedVec)
         self.reload()
 
     def load_qa(self):
@@ -118,27 +125,32 @@ class FAQrobot(object):
             txt = f.readlines()
             abovetxt = 0    # 上一行的种类： 0空白/注释  1答案   2问题
             for t in txt:   # 读取FAQ文本文件
-                t = t.strip()
+                t = t.strip()  #消除空格
                 if not t or t.startswith('#'):
                     abovetxt = 0
                 elif abovetxt != 2:
-                    if t.startswith('【问题】'): # 输入第一个问题
-                        self.zhishiku.append(zhishiku(t[4:]))
+                    if t.startswith('问题：'): # 输入第一个问题
+                        self.zhishiku.append(zhishiku(t[3:])) #3-消除问题头
                         abovetxt = 2
+                        #print(t)
+                        #print(zhishiku(t[3:]))
                     else:       # 输入答案文本（非第一行的）
                         self.zhishiku[-1].a += '\n' + t
                         abovetxt = 1
                 else:
-                    if t.startswith('【问题】'): # 输入问题（非第一行的）
-                        self.zhishiku[-1].q.append(t[4:])
+                    if t.startswith('问题：'): # 输入问题（非第一行的）
+                        self.zhishiku[-1].q.append(t[3:])
                         abovetxt = 2
+                        #print(zhishiku(t[3:]))
                     else:       # 输入答案文本
                         self.zhishiku[-1].a += t
                         abovetxt = 1
 
-        for t in self.zhishiku:
+        for t in self.zhishiku: #jiebba分词
             for question in t.q:
                 t.q_word.append(set(jieba.cut(question)))
+                #print("【加载后】：" + '/ '.join(jieba.cut(question)))
+                #print(t.q_word)
 
     def load_embedding(self):
         from gensim.models import Word2Vec
@@ -153,6 +165,7 @@ class FAQrobot(object):
             for question in t.q_word:
                 t.q_vec.append({t for t in question if t in self.vecModel.index2word})
 
+
     def reload(self):
         self.load_qa()
         self.load_embedding()
@@ -163,8 +176,14 @@ class FAQrobot(object):
         """
         找出知识库里的和输入句子相似度最高的句子
         simType=simple, simple_POS, vec
+        simple：简单的对比相同词汇数量，得到句子相似度
+        simple_POS：简单的对比相同词汇数量,并对词性乘以不同的权重，得到句子相似度
+        vec：用词向量计算相似度,并对词性乘以不同的权重，得到句子相似度
+        all：调试模式，把以上几种模式的结果都显示出来，方便对比和调试
         """
-        self.lastTxt.append(intxt)
+
+
+        self.lastTxt.append(intxt) #intxt是文本输入
         if simType not in ('simple', 'simple_pos', 'vec'):
             return 'error:  maxSimTxt的simType类型不存在: {}'.format(simType)
 
@@ -181,18 +200,26 @@ class FAQrobot(object):
                 similarity(in_vec, question, method=simType, embedding=embedding)
                 for question in questions
             )
-        maxSim = max(self.zhishiku, key=lambda x: x.sim)
+        maxSim = max(self.zhishiku, key=lambda x: x.sim) #最大相似度
+
         logger.info('maxSim=' + format(maxSim.sim, '.0%'))
 
         if maxSim.sim < simCondision:
+            print(maxSim.sim)
+           # print('您是否想问: %s' % t.q)
             return '抱歉，我没有理解您的意思。'
 
+        if 0.1 < maxSim.sim < 0.8 :
+            print(maxSim.sim)
+            print('您是否想问: %s' % maxSim.q) #有反问有回答
+            #return'您是否想问: %s' %  maxSim.q  #只提出反问
+        print(maxSim.sim)
         return maxSim.a
 
     def answer(self, intxt, simType='simple'):
         """simType=simple, simple_POS, vec, all"""
         if not intxt:
-            return ''
+            return '抱歉，我没有理解您的意思。'
 
         if simType == 'all':  # 用于测试不同类型方法的准确度，返回空文本
             for method in ('simple', 'simple_pos', 'vec'):
@@ -210,5 +237,7 @@ if __name__ == '__main__':
     robot = FAQrobot('问答库.txt', usedVec=False)
     print('你好，我是智能机器人^-^')
     while True:
-        # simType=simple, simple_pos, vec, all
-        print('回复：' + robot.answer(input('输入：'), 'simple_pos') + '\n')
+
+        print('回复：' + robot.answer(sys.argv[1], 'simple_pos') + '\n')
+        break
+    #input('输入：')

@@ -1,5 +1,36 @@
 import logging
 from os.path import join, dirname
+import jieba
+import sqlite3
+import pandas as pd
+import pymysql
+
+word=[]
+
+db=pymysql.Connection(host='localhost',user='root',passwd='123123',db='ruoyi',port=3306,charset='utf8')
+cursor=db.cursor()
+sql="select * from userdict"
+try:
+    cursor.execute(sql)
+    results=cursor.fetchall()
+    #print(results)
+    for row in results:
+
+        word.append(row[0])
+
+except:
+    print("出错了！")
+#db.close()
+# 载入词典
+jieba.load_userdict(word)
+
+#jieba.add_word('xxx') #增加自定义词语
+#jieba.add_word('xxx', freq=42, tag='nz') #设置词频和词性
+#jieba.del_word('xxx') #删除自定义词语
+
+#conn = sqlite3.connect('data/douban_comment_data.db')
+#comment_data = pd.read_sql_query('select * from comment;',conn)
+#print(comment_data)
 
 
 POS_WEIGHT = {
@@ -96,13 +127,13 @@ def similarity(a, b, method='simple', pos_weight=None, embedding=None):
         for word, pos in a:
             if word not in embedding.index2word:
                 continue
-
+            # 词性权重
             cur_weight = pos_weight.get(pos, 1)
-
-            max_word_sim = max(embedding.similarity(bword, word)
-                               for bword in b)
+            # 最大的词向量相似度
+            max_word_sim = max(embedding.similarity(bword, word)for bword in b)
+            # 词性权重*最大的词向量相似度
             sim_weight += cur_weight * max_word_sim
-
+            # 词性权重之和
             total_weight += cur_weight
-
+        # 返回 词性权重*最大的词向量相似度/词性权重之和
         return sim_weight / total_weight if total_weight > 0 else 0
